@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Daily Task Reminder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #060818;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Animated background ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 20% 10%, #1a1060 0%, transparent 60%),
+                  radial-gradient(ellipse 60% 50% at 80% 80%, #0d1f5c 0%, transparent 55%),
+                  radial-gradient(ellipse 50% 40% at 50% 50%, #0f0a2e 0%, transparent 70%),
+                  #060818;
+    }
+
+    /* Orbs */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: 0.35; animation: drift 12s ease-in-out infinite;
+    }
+    .orb-1 { width: 500px; height: 500px; background: #4f46e5; top: -150px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 400px; height: 400px; background: #7c3aed; bottom: -100px; right: -80px; animation-delay: -4s; }
+    .orb-3 { width: 300px; height: 300px; background: #2563eb; top: 40%; left: 60%; animation-delay: -8s; }
+    .orb-4 { width: 200px; height: 200px; background: #06b6d4; top: 20%; right: 20%; animation-delay: -2s; opacity: 0.2; }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%       { transform: translate(30px, -20px) scale(1.05); }
+      66%       { transform: translate(-20px, 15px) scale(0.97); }
+    }
+
+    /* Floating glass UI elements */
+    .float-el {
+      position: absolute; border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      animation: floatUp 6s ease-in-out infinite;
+    }
+
+    /* Task card float */
+    .float-task {
+      width: 220px; padding: 14px 16px;
+      top: 12%; left: 5%;
+      animation-delay: 0s;
+    }
+    .float-task-2 {
+      width: 200px; padding: 12px 14px;
+      bottom: 18%; left: 8%;
+      animation-delay: -3s;
+    }
+    .float-cal {
+      width: 180px; padding: 14px;
+      top: 15%; right: 6%;
+      animation-delay: -1.5s;
+    }
+    .float-reminder {
+      width: 210px; padding: 12px 16px;
+      bottom: 22%; right: 5%;
+      animation-delay: -4.5s;
+    }
+    .float-check {
+      width: 160px; padding: 10px 14px;
+      top: 50%; left: 3%;
+      animation-delay: -2s;
+    }
+
+    @keyframes floatUp {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    /* Float element internals */
+    .fe-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .fe-row:last-child { margin-bottom: 0; }
+    .fe-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .fe-dot.purple { background: #818cf8; }
+    .fe-dot.green  { background: #34d399; }
+    .fe-dot.blue   { background: #60a5fa; }
+    .fe-dot.orange { background: #fb923c; }
+    .fe-line { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); flex: 1; }
+    .fe-line.short { max-width: 60%; }
+    .fe-line.done  { background: rgba(52,211,153,0.3); }
+    .fe-check { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .fe-check.done { background: #34d399; border-color: #34d399; }
+    .fe-check svg { width: 9px; height: 9px; }
+    .fe-label { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; }
+    .fe-title { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 600; margin-bottom: 6px; }
+    .fe-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .fe-cal-cell { aspect-ratio: 1; border-radius: 3px; background: rgba(255,255,255,0.06); }
+    .fe-cal-cell.active { background: #6366f1; }
+    .fe-cal-cell.dot { background: rgba(99,102,241,0.3); }
+    .fe-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .fe-badge.high { background: rgba(239,68,68,0.2); color: #f87171; }
+    .fe-badge.med  { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .fe-badge.low  { background: rgba(52,211,153,0.2); color: #34d399; }
+    .fe-progress { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); margin-top: 8px; overflow: hidden; }
+    .fe-progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #6366f1, #06b6d4); }
+    .fe-notif { display: flex; align-items: center; gap: 8px; }
+    .fe-notif-icon { width: 28px; height: 28px; border-radius: 8px; background: rgba(99,102,241,0.25); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .fe-notif-text { font-size: 10px; color: rgba(255,255,255,0.55); line-height: 1.4; }
+    .fe-notif-text strong { color: rgba(255,255,255,0.8); display: block; font-size: 11px; }
+
+    /* ── Login card ── */
+    .login-wrap {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 420px;
+      padding: 1rem;
+    }
+
+    .login-card {
+      background: rgba(15, 12, 41, 0.75);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 2.5rem 2.25rem;
+      backdrop-filter: blur(40px);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 25px 60px rgba(0,0,0,0.5),
+        0 0 80px rgba(99,102,241,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    /* Logo */
+    .login-logo { text-align: center; margin-bottom: 2rem; }
+    .login-logo-icon {
+      width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 1rem;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 32px rgba(99,102,241,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+      font-size: 1.5rem;
+    }
+    .login-logo h1 {
+      font-size: 1.5rem; font-weight: 800; color: #fff;
+      letter-spacing: -0.03em;
+    }
+    .login-logo p { color: rgba(255,255,255,0.45); font-size: 0.875rem; margin-top: 0.3rem; }
+
+    /* Error */
+    #error-msg {
+      display: none; padding: 0.75rem 1rem; border-radius: 10px;
+      background: rgba(239,68,68,0.12); color: #f87171;
+      border: 1px solid rgba(239,68,68,0.25);
+      font-size: 0.82rem; font-weight: 500; margin-bottom: 1.25rem;
+    }
+    #error-msg.show { display: block; }
+
+    /* Form */
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      color: rgba(255,255,255,0.45); text-transform: uppercase;
+      letter-spacing: 0.07em; margin-bottom: 0.45rem;
+    }
+    .form-input {
+      width: 100%; padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #fff;
+      font-size: 0.9rem; outline: none; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.25); }
+    .form-input:focus {
+      border-color: rgba(99,102,241,0.6);
+      background: rgba(99,102,241,0.08);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+
+    /* Submit button */
+    .btn-signin {
+      width: 100%; padding: 0.8rem;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; letter-spacing: 0.01em;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+      margin-top: 0.5rem;
+    }
+    .btn-signin:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.5);
+      filter: brightness(1.08);
+    }
+    .btn-signin:active { transform: translateY(0); }
+    .btn-signin:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Divider */
+    .auth-divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 1.5rem 0 0;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .auth-divider span { font-size: 0.75rem; color: rgba(255,255,255,0.3); white-space: nowrap; }
+
+    /* Footer */
+    .auth-footer {
+      text-align: center; margin-top: 1.25rem;
+      font-size: 0.85rem; color: rgba(255,255,255,0.4);
+    }
+    .auth-footer a { color: #818cf8; font-weight: 600; text-decoration: none; }
+    .auth-footer a:hover { color: #a5b4fc; text-decoration: underline; }
+
+    /* Features strip */
+    .features-strip {
+      display: flex; justify-content: center; gap: 1.5rem;
+      margin-top: 1.75rem; padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .feature-item {
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; color: rgba(255,255,255,0.3); font-weight: 500;
+    }
+    .feature-item svg { color: rgba(99,102,241,0.7); }
+
+    /* Toast */
+    #toast {
+      position: fixed; top: 1.25rem; right: 1.25rem; z-index: 9999;
+      padding: 0.875rem 1.125rem; border-radius: 10px; font-size: 0.85rem;
+      font-weight: 600; display: none; align-items: center; gap: 0.6rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4); max-width: 340px;
+    }
+    #toast.show { display: flex; }
+    #toast.toast-error { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    #toast.toast-success { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  </style>
+</head>
+<body>
+  <div id="toast"></div>
+
+  <!-- Background -->
+  <div class="bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+
+    <!-- Floating task card 1 -->
+    <div class="float-el float-task">
+      <div class="fe-label">My Tasks</div>
+      <div class="fe-row">
+        <div class="fe-check done">
+          <svg viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="2,5 4,7 8,3"/></svg>
+        </div>
+        <div class="fe-line done"></div>
+        <div class="fe-badge low">Low</div>
+      </div>
+      <div class="fe-row">
+        <div class="fe-check"></div>
+        <div class="fe-line"></div>
+        <div class="fe-badge high">High</div>
+      </div>
+      <div class="fe-row">
+        <div class="fe-check"></div>
+        <div class="fe-line short"></div>
+        <div class="fe-badge med">Med</div>
+      </div>
+      <div class="fe-progress"><div class="fe-progress-fill" style="width:65%"></div></div>
+    </div>
+
+    <!-- Floating task card 2 -->
+    <div class="float-el float-task-2">
+      <div class="fe-label">Today</div>
+      <div class="fe-row">
+        <div class="fe-dot purple"></div>
+        <div class="fe-line"></div>
+      </div>
+      <div class="fe-row">
+        <div class="fe-dot green"></div>
+        <div class="fe-line short"></div>
+      </div>
+      <div class="fe-row">
+        <div class="fe-dot blue"></div>
+        <div class="fe-line"></div>
+      </div>
+    </div>
+
+    <!-- Floating calendar -->
+    <div class="float-el float-cal">
+      <div class="fe-label">April 2026</div>
+      <div class="fe-cal-grid">
+        <div class="fe-cal-cell"></div><div class="fe-cal-cell"></div><div class="fe-cal-cell dot"></div>
+        <div class="fe-cal-cell"></div><div class="fe-cal-cell active"></div><div class="fe-cal-cell"></div>
+        <div class="fe-cal-cell dot"></div><div class="fe-cal-cell"></div><div class="fe-cal-cell"></div>
+        <div class="fe-cal-cell dot"></div><div class="fe-cal-cell"></div><div class="fe-cal-cell"></div>
+        <div class="fe-cal-cell"></div><div class="fe-cal-cell active"></div><div class="fe-cal-cell"></div>
+        <div class="fe-cal-cell"></div><div class="fe-cal-cell dot"></div><div class="fe-cal-cell"></div>
+        <div class="fe-cal-cell"></div><div class="fe-cal-cell"></div><div class="fe-cal-cell dot"></div>
+      </div>
+    </div>
+
+    <!-- Floating reminder -->
+    <div class="float-el float-reminder">
+      <div class="fe-notif">
+        <div class="fe-notif-icon">⏰</div>
+        <div class="fe-notif-text">
+          <strong>Reminder</strong>
+          Task due in 15 minutes
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating checklist -->
+    <div class="float-el float-check">
+      <div class="fe-label">Progress</div>
+      <div class="fe-row">
+        <div class="fe-check done">
+          <svg viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="2,5 4,7 8,3"/></svg>
+        </div>
+        <div class="fe-line done short"></div>
+      </div>
+      <div class="fe-row">
+        <div class="fe-check done">
+          <svg viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><polyline points="2,5 4,7 8,3"/></svg>
+        </div>
+        <div class="fe-line done"></div>
+      </div>
+      <div class="fe-row">
+        <div class="fe-check"></div>
+        <div class="fe-line short"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">✓</div>
+        <h1>Daily Task Reminder</h1>
+        <p>Welcome back — sign in to continue</p>
+      </div>
+
+      <div id="error-msg"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" id="submit-btn" class="btn-signin">Sign In</button>
+      </form>
+
+      <div class="auth-divider"><span>New to Daily Task Reminder?</span></div>
+
+      <p class="auth-footer">
+        <a href="signup.html">Create a free account →</a>
+      </p>
+
+      <div class="features-strip">
+        <div class="feature-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Smart Reminders
+        </div>
+        <div class="feature-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Task Tracking
+        </div>
+        <div class="feature-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          Email Alerts
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    redirectIfLoggedIn();
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.remove('show');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      try {
+        const data = await apiFetch('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          }),
+        });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

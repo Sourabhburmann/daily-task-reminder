@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Daily Task Reminder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toast"></div>
+
+  <!-- Mobile topbar -->
+  <div class="mobile-topbar">
+    <div class="mobile-topbar-brand">
+      <div class="logo-icon">📋</div>
+      <span>Daily Task Reminder</span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+  </div>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-inner">
+          <div class="sidebar-logo-icon">📋</div>
+          <div>
+            <h1>Daily Task Reminder</h1>
+            <p>Stay on top of your day</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="add-task.html" class="nav-link" data-page="add-task"><span class="nav-icon">➕</span> Add Task</a>
+        <a href="calendar.html" class="nav-link" data-page="calendar"><span class="nav-icon">📅</span> Calendar</a>
+        <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-link" id="theme-toggle"><span class="nav-icon">🌙</span> Dark Mode</button>
+        <div class="user-info">
+          <p id="sidebar-name"></p>
+          <small id="sidebar-email"></small>
+        </div>
+        <button class="nav-link nav-link-danger" id="logout-btn"><span class="nav-icon">🚪</span> Logout</button>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Main -->
+    <main class="main-content">
+
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h2 id="greeting">Good day 👋</h2>
+            <p>Here's what's on your plate today. Stay focused and crush it!</p>
+          </div>
+          <button class="btn-new-task" id="new-task-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Task
+          </button>
+        </div>
+        <div class="hero-illustration" aria-hidden="true">
+          <svg width="180" height="130" viewBox="0 0 180 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="15" width="140" height="100" rx="12" fill="white" fill-opacity="0.08"/>
+            <rect x="34" y="30" width="60" height="8" rx="4" fill="white" fill-opacity="0.3"/>
+            <rect x="34" y="46" width="90" height="6" rx="3" fill="white" fill-opacity="0.18"/>
+            <rect x="34" y="60" width="75" height="6" rx="3" fill="white" fill-opacity="0.18"/>
+            <circle cx="148" cy="34" r="14" fill="white" fill-opacity="0.12"/>
+            <path d="M142 34l4 4 8-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <rect x="34" y="80" width="40" height="20" rx="6" fill="white" fill-opacity="0.15"/>
+            <rect x="82" y="80" width="40" height="20" rx="6" fill="white" fill-opacity="0.1"/>
+            <circle cx="155" cy="95" r="18" fill="white" fill-opacity="0.1"/>
+            <path d="M149 95l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="page">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card-new stat-purple">
+            <div class="stat-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+            <div class="stat-card-body">
+              <div class="stat-card-value" id="stat-total">0</div>
+              <div class="stat-card-label">Total Tasks</div>
+            </div>
+            <div class="stat-card-trend">All time</div>
+          </div>
+          <div class="stat-card-new stat-green">
+            <div class="stat-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="stat-card-body">
+              <div class="stat-card-value" id="stat-completed">0</div>
+              <div class="stat-card-label">Completed</div>
+            </div>
+            <div class="stat-card-trend">Done ✓</div>
+          </div>
+          <div class="stat-card-new stat-blue">
+            <div class="stat-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-card-body">
+              <div class="stat-card-value" id="stat-pending">0</div>
+              <div class="stat-card-label">Pending</div>
+            </div>
+            <div class="stat-card-trend">In progress</div>
+          </div>
+          <div class="stat-card-new stat-red">
+            <div class="stat-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="stat-card-body">
+              <div class="stat-card-value" id="stat-overdue">0</div>
+              <div class="stat-card-label">Overdue</div>
+            </div>
+            <div class="stat-card-trend">Needs attention</div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-card-wrap" id="progress-card" style="display:none;">
+          <div class="progress-card-inner">
+            <div class="progress-card-header">
+              <div>
+                <div class="progress-card-title">Overall Progress</div>
+                <div class="progress-card-sub" id="prog-overall-sub">0 of 0 tasks completed</div>
+              </div>
+              <div class="progress-ring-wrap">
+                <svg class="progress-ring" width="64" height="64" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border)" stroke-width="6"/>
+                  <circle id="ring-circle" cx="32" cy="32" r="26" fill="none" stroke="url(#ringGrad)" stroke-width="6"
+                    stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"
+                    transform="rotate(-90 32 32)" style="transition:stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1)"/>
+                  <defs>
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="var(--primary)"/>
+                      <stop offset="100%" stop-color="var(--accent)"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span class="progress-ring-pct" id="prog-overall-pct">0%</span>
+              </div>
+            </div>
+            <div class="progress-wrap" style="margin-top:1rem;">
+              <div class="progress-header"><span>This Week</span><span id="prog-week-pct">0%</span></div>
+              <div class="progress-track"><div class="progress-fill" id="prog-week" style="width:0%"></div></div>
+              <div class="progress-sub" id="prog-week-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's tasks -->
+        <div id="today-section" style="display:none;margin-bottom:1.75rem;">
+          <div class="section-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="today-title">Today's Tasks</span>
+          </div>
+          <div id="today-list"></div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Search tasks..." />
+          </div>
+          <select id="sort-select" class="sort-select">
+            <option value="date_asc">📅 Date ↑</option>
+            <option value="date_desc">📅 Date ↓</option>
+            <option value="priority_high">🔥 Priority</option>
+          </select>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all">All</button>
+          <button class="filter-tab" data-filter="pending">Pending</button>
+          <button class="filter-tab" data-filter="completed">Completed</button>
+          <button class="filter-tab" data-filter="overdue">Overdue</button>
+        </div>
+
+        <!-- Task list -->
+        <div id="task-list">
+          <div class="empty-state">
+            <div class="empty-illustration">
+              <svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="15" y="10" width="90" height="80" rx="10" fill="var(--border)" fill-opacity="0.5"/>
+                <rect x="28" y="25" width="50" height="7" rx="3.5" fill="var(--border)"/>
+                <rect x="28" y="40" width="64" height="5" rx="2.5" fill="var(--border)" fill-opacity="0.7"/>
+                <rect x="28" y="53" width="40" height="5" rx="2.5" fill="var(--border)" fill-opacity="0.5"/>
+                <circle cx="90" cy="72" r="18" fill="var(--primary)" fill-opacity="0.15"/>
+                <path d="M84 72l4 4 8-8" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </div>
+            <p class="empty-title">No tasks yet</p>
+            <p class="empty-sub">Create your first task to get started</p>
+            <button class="btn-primary" onclick="document.getElementById('new-task-btn').click()" style="margin-top:1rem;">+ Create Task</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay" id="task-modal">
+    <div class="card modal">
+      <div class="modal-header">
+        <h2 id="modal-title">New Task</h2>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div id="modal-error" class="alert alert-error"></div>
+      <form id="task-form">
+        <input type="hidden" id="task-id" />
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="task-title" class="input-field" placeholder="Task title" required />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="task-desc" class="input-field" rows="3" placeholder="Optional description..." style="resize:none;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Due Date & Time *</label>
+          <input type="datetime-local" id="task-due" class="input-field" required />
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="task-priority" class="input-field">
+            <option value="low">🟢 Low</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="high">🔴 High</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" id="modal-submit">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="card modal" style="max-width:360px;">
+      <h3 style="font-weight:700;margin-bottom:.5rem;">Delete Task?</h3>
+      <p id="delete-msg" style="color:var(--text-muted);font-size:.85rem;margin-bottom:1rem;"></p>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+        <button class="btn-secondary" id="delete-cancel">Cancel</button>
+        <button class="btn-danger" id="delete-confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    requireAuth();
+    initSidebar('dashboard');
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('greeting').textContent = `Good day, ${(user.name || '').split(' ')[0]} 👋`;
+
+    let allTasks = [];
+    let currentFilter = 'all';
+    let currentSort = 'date_asc';
+    let currentSearch = '';
+    let deleteTaskId = null;
+
+    // ── Fetch stats ──────────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const data = await apiFetch('/tasks/stats');
+        document.getElementById('stat-total').textContent = data.total ?? 0;
+        document.getElementById('stat-completed').textContent = data.completed ?? 0;
+        document.getElementById('stat-pending').textContent = data.pending ?? 0;
+        document.getElementById('stat-overdue').textContent = data.overdue ?? 0;
+
+        const total = data.total || 0;
+        const overallPct = total > 0 ? Math.round((data.completed / total) * 100) : 0;
+        const weekPct = total > 0 ? Math.round((data.weekCompleted / total) * 100) : 0;
+
+        // Ring chart
+        const circle = document.getElementById('ring-circle');
+        const circumference = 163.4;
+        if (circle) circle.style.strokeDashoffset = circumference - (circumference * overallPct / 100);
+
+        document.getElementById('prog-overall-pct').textContent = overallPct + '%';
+        document.getElementById('prog-overall-sub').textContent = `${data.completed} of ${total} tasks completed`;
+        document.getElementById('prog-week').style.width = weekPct + '%';
+        document.getElementById('prog-week-pct').textContent = weekPct + '%';
+        document.getElementById('prog-week-sub').textContent = `${data.weekCompleted} of ${total} tasks this week`;
+
+        if (total > 0) document.getElementById('progress-card').style.display = 'block';
+      } catch (e) { /* silent */ }
+    }
+
+    // ── Fetch tasks ──────────────────────────────────────────────────────
+    async function loadTasks() {
+      const params = new URLSearchParams();
+      if (currentFilter !== 'all') params.set('status', currentFilter);
+      if (currentSort) params.set('sort', currentSort);
+      if (currentSearch) params.set('search', currentSearch);
+
+      try {
+        const data = await apiFetch('/tasks?' + params.toString());
+        allTasks = data.tasks || [];
+        scheduleDaily Task Reminders(allTasks);
+        renderTasks();
+        renderToday();
+      } catch (e) {
+        document.getElementById('task-list').innerHTML = `<div class="empty-state"><div class="empty-icon">❌</div><p class="empty-title">${e.message}</p></div>`;
+      }
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('task-list');
+      if (allTasks.length === 0) {
+        list.innerHTML = `<div class="empty-state">
+          <div class="empty-illustration">
+            <svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="15" y="10" width="90" height="80" rx="10" fill="var(--border)" fill-opacity="0.5"/>
+              <rect x="28" y="25" width="50" height="7" rx="3.5" fill="var(--border)"/>
+              <rect x="28" y="40" width="64" height="5" rx="2.5" fill="var(--border)" fill-opacity="0.7"/>
+              <rect x="28" y="53" width="40" height="5" rx="2.5" fill="var(--border)" fill-opacity="0.5"/>
+              <circle cx="90" cy="72" r="18" fill="var(--primary)" fill-opacity="0.15"/>
+              <path d="M84 72l4 4 8-8" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <p class="empty-title">No tasks found</p>
+          <p class="empty-sub">Try a different filter or create a new task</p>
+        </div>`;
+        return;
+      }
+      list.innerHTML = allTasks.map(taskCardHTML).join('');
+      attachTaskEvents(list);
+    }
+
+    function renderToday() {
+      const todayTasks = allTasks.filter(t => isToday(t.dueDate));
+      const section = document.getElementById('today-section');
+      const list = document.getElementById('today-list');
+      if (todayTasks.length === 0) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      document.getElementById('today-title').textContent = `Today's Tasks (${todayTasks.length})`;
+      list.innerHTML = todayTasks.map(taskCardHTML).join('');
+      attachTaskEvents(list);
+    }
+
+    function taskCardHTML(task) {
+      const overdue = task.status !== 'completed' && isPast(task.dueDate);
+      const priorityIcon = { high: '🔴', medium: '🟡', low: '🟢' }[task.priority] || '';
+      return `
+        <div class="task-card-new ${overdue ? 'overdue' : ''} ${task.status === 'completed' ? 'completed' : ''}" data-id="${task._id}">
+          <div class="tcn-left">
+            <button class="tcn-check ${task.status === 'completed' ? 'checked' : ''} btn-complete" data-id="${task._id}" title="Mark complete">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+          <div class="tcn-body">
+            <div class="tcn-title ${task.status === 'completed' ? 'done' : ''}">${task.title}</div>
+            ${task.description ? `<div class="tcn-desc">${task.description}</div>` : ''}
+            <div class="tcn-meta">
+              <span class="badge badge-${task.priority}">${priorityIcon} ${task.priority}</span>
+              <span class="badge badge-${task.status}">${task.status}</span>
+              <span class="tcn-due ${overdue ? 'overdue' : ''}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${formatDate(task.dueDate)}
+              </span>
+            </div>
+          </div>
+          <div class="tcn-actions">
+            <button class="tcn-btn btn-edit" data-id="${task._id}" title="Edit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="tcn-btn btn-delete danger" data-id="${task._id}" data-title="${task.title}" title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function attachTaskEvents(container) {
+      container.querySelectorAll('.btn-complete').forEach(btn => {
+        if (btn.classList.contains('checked')) return;
+        btn.onclick = async () => {
+          try {
+            await apiFetch(`/tasks/${btn.dataset.id}/complete`, { method: 'PATCH' });
+            showToast('Task marked as completed', 'success');
+            loadTasks(); loadStats();
+          } catch (e) { showToast(e.message, 'error'); }
+        };
+      });
+      container.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.onclick = () => openEditModal(btn.dataset.id);
+      });
+      container.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.onclick = () => openDeleteModal(btn.dataset.id, btn.dataset.title);
+      });
+    }
+
+    // ── Task Modal ───────────────────────────────────────────────────────
+    function openModal(task = null) {
+      document.getElementById('modal-error').classList.remove('show');
+      document.getElementById('task-id').value = task ? task._id : '';
+      document.getElementById('modal-title').textContent = task ? 'Edit Task' : 'New Task';
+      document.getElementById('modal-submit').textContent = task ? 'Update Task' : 'Create Task';
+      document.getElementById('task-title').value = task ? task.title : '';
+      document.getElementById('task-desc').value = task ? (task.description || '') : '';
+      document.getElementById('task-due').value = task ? toDatetimeLocal(task.dueDate) : '';
+      document.getElementById('task-priority').value = task ? task.priority : 'medium';
+      document.getElementById('task-modal').classList.add('show');
+    }
+
+    function closeModal() { document.getElementById('task-modal').classList.remove('show'); }
+
+    function openEditModal(id) {
+      const task = allTasks.find(t => t._id === id);
+      if (task) openModal(task);
+    }
+
+    document.getElementById('new-task-btn').onclick = () => openModal();
+    document.getElementById('modal-close').onclick = closeModal;
+    document.getElementById('modal-cancel').onclick = closeModal;
+
+    document.getElementById('task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('modal-error');
+      errEl.classList.remove('show');
+      const id = document.getElementById('task-id').value;
+      const body = {
+        title: document.getElementById('task-title').value,
+        description: document.getElementById('task-desc').value,
+        dueDate: document.getElementById('task-due').value,
+        priority: document.getElementById('task-priority').value,
+      };
+      const btn = document.getElementById('modal-submit');
+      btn.disabled = true;
+      try {
+        if (id) {
+          await apiFetch(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+          showToast('Task updated', 'success');
+        } else {
+          await apiFetch('/tasks', { method: 'POST', body: JSON.stringify(body) });
+          showToast('Task created', 'success');
+        }
+        closeModal();
+        loadTasks(); loadStats();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Delete Modal ─────────────────────────────────────────────────────
+    function openDeleteModal(id, title) {
+      deleteTaskId = id;
+      document.getElementById('delete-msg').textContent = `Are you sure you want to delete "${title}"? This cannot be undone.`;
+      document.getElementById('delete-modal').classList.add('show');
+    }
+    document.getElementById('delete-cancel').onclick = () => document.getElementById('delete-modal').classList.remove('show');
+    document.getElementById('delete-confirm').onclick = async () => {
+      try {
+        await apiFetch(`/tasks/${deleteTaskId}`, { method: 'DELETE' });
+        showToast('Task deleted', 'success');
+        document.getElementById('delete-modal').classList.remove('show');
+        loadTasks(); loadStats();
+      } catch (e) { showToast(e.message, 'error'); }
+    };
+
+    // ── Filters ──────────────────────────────────────────────────────────
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        loadTasks();
+      };
+    });
+
+    let searchTimer;
+    document.getElementById('search-input').oninput = (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { currentSearch = e.target.value; loadTasks(); }, 300);
+    };
+
+    document.getElementById('sort-select').onchange = (e) => {
+      currentSort = e.target.value;
+      loadTasks();
+    };
+
+    // ── Init ─────────────────────────────────────────────────────────────
+    requestNotificationPermission();
+    loadStats();
+    loadTasks();
+  </script>
+</body>
+</html>

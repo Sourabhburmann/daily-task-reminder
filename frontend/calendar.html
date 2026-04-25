@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar — Daily Task Reminder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toast"></div>
+
+  <div class="mobile-topbar">
+    <div class="mobile-topbar-brand">
+      <div class="logo-icon">📋</div>
+      <span>Daily Task Reminder</span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+  </div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-inner">
+          <div class="sidebar-logo-icon">📋</div>
+          <div>
+            <h1>Daily Task Reminder</h1>
+            <p>Stay on top of your day</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="add-task.html" class="nav-link" data-page="add-task"><span class="nav-icon">➕</span> Add Task</a>
+        <a href="calendar.html" class="nav-link" data-page="calendar"><span class="nav-icon">📅</span> Calendar</a>
+        <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-link" id="theme-toggle"><span class="nav-icon">🌙</span> Dark Mode</button>
+        <div class="user-info">
+          <p id="sidebar-name"></p>
+          <small id="sidebar-email"></small>
+        </div>
+        <button class="nav-link nav-link-danger" id="logout-btn"><span class="nav-icon">🚪</span> Logout</button>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="page">
+        <div class="page-header"><h2>📅 Calendar View</h2></div>
+
+        <div class="cal-layout">
+          <!-- Calendar -->
+          <div class="card">
+            <div class="cal-nav">
+              <button id="prev-month">‹</button>
+              <span id="cal-month-label"></span>
+              <button id="next-month">›</button>
+            </div>
+            <div class="cal-header">
+              <div class="cal-day-name">Sun</div>
+              <div class="cal-day-name">Mon</div>
+              <div class="cal-day-name">Tue</div>
+              <div class="cal-day-name">Wed</div>
+              <div class="cal-day-name">Thu</div>
+              <div class="cal-day-name">Fri</div>
+              <div class="cal-day-name">Sat</div>
+            </div>
+            <div class="calendar-grid" id="cal-grid"></div>
+          </div>
+
+          <!-- Tasks for selected date -->
+          <div>
+            <div class="section-title" id="selected-date-label">Tasks for today</div>
+            <div id="date-tasks"><div class="empty-state"><div class="empty-icon">⏳</div><p>Loading...</p></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    requireAuth();
+    initSidebar('calendar');
+
+    let allTasks = [];
+    let selectedDate = new Date();
+    let viewYear = selectedDate.getFullYear();
+    let viewMonth = selectedDate.getMonth();
+
+    function sameDay(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    async function loadTasks() {
+      try {
+        const data = await apiFetch('/tasks');
+        allTasks = data.tasks || [];
+        renderCalendar();
+        renderDateTasks();
+      } catch (e) {
+        document.getElementById('date-tasks').innerHTML = `<div class="empty-state"><div class="empty-icon">❌</div><p>${e.message}</p></div>`;
+      }
+    }
+
+    function renderCalendar() {
+      const label = document.getElementById('cal-month-label');
+      label.textContent = new Date(viewYear, viewMonth).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+      const grid = document.getElementById('cal-grid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const daysInPrev = new Date(viewYear, viewMonth, 0).getDate();
+
+      // Prev month padding
+      for (let i = firstDay - 1; i >= 0; i--) {
+        grid.appendChild(makeCell(new Date(viewYear, viewMonth - 1, daysInPrev - i), true));
+      }
+      // Current month
+      for (let d = 1; d <= daysInMonth; d++) {
+        grid.appendChild(makeCell(new Date(viewYear, viewMonth, d), false));
+      }
+      // Next month padding
+      const total = firstDay + daysInMonth;
+      const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+      for (let d = 1; d <= remaining; d++) {
+        grid.appendChild(makeCell(new Date(viewYear, viewMonth + 1, d), true));
+      }
+    }
+
+    function makeCell(date, otherMonth) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      if (otherMonth) cell.classList.add('other-month');
+
+      const now = new Date();
+      if (sameDay(date, now)) cell.classList.add('today');
+      if (sameDay(date, selectedDate)) cell.classList.add('selected');
+
+      cell.textContent = date.getDate();
+
+      const hasTasks = allTasks.some(t => sameDay(new Date(t.dueDate), date));
+      if (hasTasks) {
+        const dot = document.createElement('span');
+        dot.className = 'cal-dot';
+        cell.appendChild(dot);
+      }
+
+      cell.onclick = () => {
+        selectedDate = date;
+        renderCalendar();
+        renderDateTasks();
+      };
+      return cell;
+    }
+
+    function renderDateTasks() {
+      const label = document.getElementById('selected-date-label');
+      label.textContent = `Tasks for ${selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+
+      const tasks = allTasks.filter(t => sameDay(new Date(t.dueDate), selectedDate));
+      const container = document.getElementById('date-tasks');
+
+      if (tasks.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>No tasks on this day</p></div>';
+        return;
+      }
+
+      container.innerHTML = tasks.map(task => {
+        const overdue = task.status !== 'completed' && isPast(task.dueDate);
+        return `
+          <div class="card task-card ${overdue ? 'overdue' : ''}" style="margin-bottom:.75rem;">
+            <div class="task-title ${task.status === 'completed' ? 'done' : ''}">${task.title}</div>
+            ${task.description ? `<div class="task-desc">${task.description}</div>` : ''}
+            <div class="task-meta">
+              <span class="badge badge-${task.priority}">${task.priority}</span>
+              <span class="badge badge-${task.status}">${task.status}</span>
+              <span class="task-due ${overdue ? 'overdue' : ''}">📅 ${formatDate(task.dueDate)}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    document.getElementById('prev-month').onclick = () => {
+      viewMonth--;
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderCalendar();
+    };
+    document.getElementById('next-month').onclick = () => {
+      viewMonth++;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderCalendar();
+    };
+
+    loadTasks();
+  </script>
+</body>
+</html>

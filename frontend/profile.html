@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — Daily Task Reminder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toast"></div>
+
+  <div class="mobile-topbar">
+    <div class="mobile-topbar-brand">
+      <div class="logo-icon">📋</div>
+      <span>Daily Task Reminder</span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+  </div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-inner">
+          <div class="sidebar-logo-icon">📋</div>
+          <div>
+            <h1>Daily Task Reminder</h1>
+            <p>Stay on top of your day</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="add-task.html" class="nav-link" data-page="add-task"><span class="nav-icon">➕</span> Add Task</a>
+        <a href="calendar.html" class="nav-link" data-page="calendar"><span class="nav-icon">📅</span> Calendar</a>
+        <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-link" id="theme-toggle"><span class="nav-icon">🌙</span> Dark Mode</button>
+        <div class="user-info">
+          <p id="sidebar-name"></p>
+          <small id="sidebar-email"></small>
+        </div>
+        <button class="nav-link nav-link-danger" id="logout-btn"><span class="nav-icon">🚪</span> Logout</button>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="page" style="max-width:520px;">
+        <div class="page-header"><h2>Profile Settings</h2></div>
+
+        <div class="card">
+          <!-- Avatar -->
+          <div class="profile-user">
+            <div class="avatar" id="avatar-initial">?</div>
+            <div>
+              <p style="font-weight:700;font-size:1.05rem;" id="profile-name-display"></p>
+              <p style="color:var(--text-muted);font-size:.85rem;" id="profile-email-display"></p>
+            </div>
+          </div>
+
+          <div id="success-msg" class="alert alert-success"></div>
+          <div id="error-msg" class="alert alert-error"></div>
+
+          <form id="profile-form">
+            <div class="form-group">
+              <label>Display Name</label>
+              <input type="text" id="profile-name" class="input-field" required />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="profile-email" class="input-field" disabled style="opacity:.6;cursor:not-allowed;" />
+              <small style="color:var(--text-muted);font-size:.75rem;">Email cannot be changed</small>
+            </div>
+
+            <!-- Email notifications toggle -->
+            <div class="toggle-wrap">
+              <div>
+                <p style="font-weight:600;font-size:.9rem;">📧 Email Notifications</p>
+                <small style="color:var(--text-muted);">Receive email reminders 15 min before due time</small>
+              </div>
+              <button type="button" class="toggle-btn" id="email-toggle">
+                <span class="toggle-knob"></span>
+              </button>
+            </div>
+
+            <!-- Phone number -->
+            <div class="form-group" style="margin-top:1rem;">
+              <label>📱 Mobile Number</label>
+              <input type="tel" id="profile-phone" class="input-field" placeholder="+919876543210 (international format)" />
+              <small style="color:var(--text-muted);font-size:.75rem;">Include country code e.g. +91 for India, +1 for US</small>
+            </div>
+
+            <!-- SMS notifications toggle -->
+            <div class="toggle-wrap">
+              <div>
+                <p style="font-weight:600;font-size:.9rem;">💬 SMS Notifications</p>
+                <small style="color:var(--text-muted);">Receive SMS reminders 15 min before due time</small>
+              </div>
+              <button type="button" class="toggle-btn" id="sms-toggle">
+                <span class="toggle-knob"></span>
+              </button>
+            </div>
+
+            <!-- Twilio setup note -->
+            <div id="twilio-note" style="display:none;margin-top:.5rem;padding:.75rem 1rem;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px;font-size:.8rem;color:var(--text-muted);">
+              💡 SMS requires Twilio credentials in the backend <code>.env</code> file.<br>
+              Get free credentials at <a href="https://twilio.com" target="_blank" style="color:var(--primary);">twilio.com</a>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-primary" style="width:100%;margin-top:1.25rem;">Save Changes</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    requireAuth();
+    initSidebar('profile');
+
+    let emailNotifications = false;
+    let smsNotifications = false;
+
+    async function loadProfile() {
+      try {
+        const data = await apiFetch('/auth/me');
+        const user = data.user;
+        localStorage.setItem('user', JSON.stringify(user));
+
+        document.getElementById('avatar-initial').textContent = (user.name || '?')[0].toUpperCase();
+        document.getElementById('profile-name-display').textContent = user.name;
+        document.getElementById('profile-email-display').textContent = user.email;
+        document.getElementById('profile-name').value = user.name;
+        document.getElementById('profile-email').value = user.email;
+        document.getElementById('profile-phone').value = user.phone || '';
+
+        emailNotifications = user.emailNotifications || false;
+        smsNotifications = user.smsNotifications || false;
+        updateToggles();
+      } catch (e) {
+        showToast(e.message, 'error');
+      }
+    }
+
+    function updateToggles() {
+      document.getElementById('email-toggle').classList.toggle('on', emailNotifications);
+      document.getElementById('sms-toggle').classList.toggle('on', smsNotifications);
+      document.getElementById('twilio-note').style.display = smsNotifications ? 'block' : 'none';
+    }
+
+    document.getElementById('email-toggle').onclick = () => {
+      emailNotifications = !emailNotifications;
+      updateToggles();
+    };
+
+    document.getElementById('sms-toggle').onclick = () => {
+      smsNotifications = !smsNotifications;
+      updateToggles();
+    };
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const successEl = document.getElementById('success-msg');
+      const errEl = document.getElementById('error-msg');
+      successEl.classList.remove('show');
+      errEl.classList.remove('show');
+
+      const phone = document.getElementById('profile-phone').value.trim();
+
+      // Validate phone if SMS is enabled
+      if (smsNotifications && phone && !/^\+[1-9]\d{7,14}$/.test(phone)) {
+        errEl.textContent = 'Phone must be in international format e.g. +919876543210';
+        errEl.classList.add('show');
+        return;
+      }
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const data = await apiFetch('/auth/profile', {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: document.getElementById('profile-name').value,
+            emailNotifications,
+            phone,
+            smsNotifications,
+          }),
+        });
+        localStorage.setItem('user', JSON.stringify(data.user));
+        document.getElementById('sidebar-name').textContent = data.user.name;
+        document.getElementById('profile-name-display').textContent = data.user.name;
+        document.getElementById('avatar-initial').textContent = (data.user.name || '?')[0].toUpperCase();
+        successEl.textContent = '✅ Profile updated successfully';
+        successEl.classList.add('show');
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Changes';
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

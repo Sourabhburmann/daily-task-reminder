@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Task — Daily Task Reminder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toast"></div>
+
+  <div class="mobile-topbar">
+    <div class="mobile-topbar-brand">
+      <div class="logo-icon">📋</div>
+      <span>Daily Task Reminder</span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+  </div>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-inner">
+          <div class="sidebar-logo-icon">📋</div>
+          <div>
+            <h1>Daily Task Reminder</h1>
+            <p>Stay on top of your day</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-link" data-page="dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="add-task.html" class="nav-link" data-page="add-task"><span class="nav-icon">➕</span> Add Task</a>
+        <a href="calendar.html" class="nav-link" data-page="calendar"><span class="nav-icon">📅</span> Calendar</a>
+        <a href="profile.html" class="nav-link" data-page="profile"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-link" id="theme-toggle"><span class="nav-icon">🌙</span> Dark Mode</button>
+        <div class="user-info">
+          <p id="sidebar-name"></p>
+          <small id="sidebar-email"></small>
+        </div>
+        <button class="nav-link nav-link-danger" id="logout-btn"><span class="nav-icon">🚪</span> Logout</button>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+      <div class="page" style="max-width:520px;">
+        <div class="page-header">
+          <h2>➕ Add New Task</h2>
+        </div>
+
+        <div class="card">
+          <div id="error-msg" class="alert alert-error"></div>
+
+          <form id="task-form">
+            <div class="form-group">
+              <label>Title *</label>
+              <input type="text" id="task-title" class="input-field" placeholder="Task title" required />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="task-desc" class="input-field" rows="3" placeholder="Optional description..." style="resize:none;"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Due Date & Time *</label>
+              <input type="datetime-local" id="task-due" class="input-field" required />
+            </div>
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="task-priority" class="input-field">
+                <option value="low">🟢 Low</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="high">🔴 High</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:.5rem;">
+              <a href="dashboard.html" class="btn-secondary" style="flex:1;text-align:center;padding:.5rem;">Cancel</a>
+              <button type="submit" id="submit-btn" class="btn-primary" style="flex:1;">Create Task</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    requireAuth();
+    initSidebar('add-task');
+
+    document.getElementById('task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.remove('show');
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
+
+      try {
+        await apiFetch('/tasks', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: document.getElementById('task-title').value,
+            description: document.getElementById('task-desc').value,
+            dueDate: document.getElementById('task-due').value,
+            priority: document.getElementById('task-priority').value,
+          }),
+        });
+        showToast('Task created!', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 800);
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Create Task';
+      }
+    });
+  </script>
+</body>
+</html>
