@@ -125,7 +125,7 @@ function showNotification(title, body) {
   new Notification(title, { body, icon: '/favicon.ico' });
 }
 
-function scheduleDaily Task Reminders(tasks) {
+function scheduleTaskReminders(tasks) {
   tasks.forEach(task => {
     if (task.status === 'completed') return;
     const dueTime = new Date(task.dueDate).getTime();
