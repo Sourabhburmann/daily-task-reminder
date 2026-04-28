@@ -142,7 +142,11 @@ function scheduleTaskReminders(tasks) {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return new Date(dateStr).toLocaleString('en-IN', { 
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    month: 'short', day: 'numeric', year: 'numeric', 
+    hour: 'numeric', minute: '2-digit' 
+  });
 }
 
 function isToday(dateStr) {
