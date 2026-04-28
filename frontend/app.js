@@ -142,18 +142,27 @@ function scheduleTaskReminders(tasks) {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleString('en-IN', { 
+  const date = new Date(dateStr);
+  return date.toLocaleString('en-IN', { 
     timeZone: 'Asia/Kolkata',
-    month: 'short', day: 'numeric', year: 'numeric', 
-    hour: 'numeric', minute: '2-digit',
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric', 
+    hour: 'numeric', 
+    minute: '2-digit',
     hour12: true
   });
 }
 
 function isToday(dateStr) {
-  const d = new Date(new Date(dateStr).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  const d = new Date(dateStr);
+  const now = new Date();
+  // Compare in IST
+  const dIST = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const nowIST = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  return dIST.getFullYear() === nowIST.getFullYear() && 
+         dIST.getMonth() === nowIST.getMonth() && 
+         dIST.getDate() === nowIST.getDate();
 }
 
 function isPast(dateStr) {
@@ -161,12 +170,10 @@ function isPast(dateStr) {
 }
 
 function toDatetimeLocal(dateStr) {
-  // Convert stored UTC date back to IST for editing in datetime-local input
-  const utcDate = new Date(dateStr);
-  const istOffset = 5.5 * 60 * 60 * 1000; // IST = UTC+5:30
-  const istDate = new Date(utcDate.getTime() + istOffset);
+  // Convert UTC from server to local datetime-local format
+  const d = new Date(dateStr);
   const pad = n => String(n).padStart(2, '0');
-  return `${istDate.getUTCFullYear()}-${pad(istDate.getUTCMonth()+1)}-${pad(istDate.getUTCDate())}T${pad(istDate.getUTCHours())}:${pad(istDate.getUTCMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // Run theme immediately
