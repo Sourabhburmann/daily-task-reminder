@@ -161,10 +161,12 @@ function isPast(dateStr) {
 }
 
 function toDatetimeLocal(dateStr) {
-  // Convert UTC date to IST for datetime-local input
-  const d = new Date(new Date(dateStr).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  // Convert stored UTC date back to IST for editing in datetime-local input
+  const utcDate = new Date(dateStr);
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST = UTC+5:30
+  const istDate = new Date(utcDate.getTime() + istOffset);
   const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${istDate.getUTCFullYear()}-${pad(istDate.getUTCMonth()+1)}-${pad(istDate.getUTCDate())}T${pad(istDate.getUTCHours())}:${pad(istDate.getUTCMinutes())}`;
 }
 
 // Run theme immediately
