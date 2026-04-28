@@ -143,15 +143,16 @@ function scheduleTaskReminders(tasks) {
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleString('en-IN', { 
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timeZone: 'Asia/Kolkata',
     month: 'short', day: 'numeric', year: 'numeric', 
-    hour: 'numeric', minute: '2-digit' 
+    hour: 'numeric', minute: '2-digit',
+    hour12: true
   });
 }
 
 function isToday(dateStr) {
-  const d = new Date(dateStr);
-  const now = new Date();
+  const d = new Date(new Date(dateStr).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
 }
 
@@ -160,7 +161,8 @@ function isPast(dateStr) {
 }
 
 function toDatetimeLocal(dateStr) {
-  const d = new Date(dateStr);
+  // Convert UTC date to IST for datetime-local input
+  const d = new Date(new Date(dateStr).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
   const pad = n => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
