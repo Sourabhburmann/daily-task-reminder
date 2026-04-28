@@ -312,7 +312,7 @@
       try {
         const data = await apiFetch('/tasks?' + params.toString());
         allTasks = data.tasks || [];
-        scheduleDaily Task Reminders(allTasks);
+        scheduleTaskReminders(allTasks);
         renderTasks();
         renderToday();
       } catch (e) {
