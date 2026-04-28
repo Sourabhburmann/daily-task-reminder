@@ -87,7 +87,7 @@
     </main>
   </div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
   <script>
     requireAuth();
     initSidebar('add-task');
@@ -101,12 +101,16 @@
       btn.textContent = 'Creating...';
 
       try {
+        const rawDate = document.getElementById('task-due').value;
+        const istDate = new Date(rawDate);
+        const utcDate = new Date(istDate.getTime() - (5.5 * 60 * 60 * 1000));
+        
         await apiFetch('/tasks', {
           method: 'POST',
           body: JSON.stringify({
             title: document.getElementById('task-title').value,
             description: document.getElementById('task-desc').value,
-            dueDate: document.getElementById('task-due').value,
+            dueDate: utcDate.toISOString(),
             priority: document.getElementById('task-priority').value,
           }),
         });

@@ -260,7 +260,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
   <script>
     requireAuth();
     initSidebar('dashboard');
@@ -435,10 +435,14 @@
       const errEl = document.getElementById('modal-error');
       errEl.classList.remove('show');
       const id = document.getElementById('task-id').value;
+      const rawDate = document.getElementById('task-due').value; // e.g. "2026-04-28T14:37"
+      // Convert IST input to UTC by subtracting 5:30
+      const istDate = new Date(rawDate); // browser treats as local
+      const utcDate = new Date(istDate.getTime() - (5.5 * 60 * 60 * 1000));
       const body = {
         title: document.getElementById('task-title').value,
         description: document.getElementById('task-desc').value,
-        dueDate: document.getElementById('task-due').value,
+        dueDate: utcDate.toISOString(),
         priority: document.getElementById('task-priority').value,
       };
       const btn = document.getElementById('modal-submit');
