@@ -112,6 +112,16 @@
 
             <button type="submit" id="submit-btn" class="btn-primary" style="width:100%;margin-top:1.25rem;">Save Changes</button>
           </form>
+
+          <!-- Test Notification Buttons -->
+          <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+            <p style="font-weight:600;font-size:.9rem;margin-bottom:.75rem;">🧪 Test Notifications</p>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+              <button id="test-email-btn" class="btn-secondary" style="flex:1;min-width:140px;">📧 Send Test Email</button>
+              <button id="test-sms-btn" class="btn-secondary" style="flex:1;min-width:140px;">💬 Send Test SMS</button>
+            </div>
+            <small style="color:var(--text-muted);font-size:.75rem;display:block;margin-top:.5rem;">Sends a test reminder to your email / phone right now</small>
+          </div>
         </div>
       </div>
     </main>
@@ -208,6 +218,26 @@
     });
 
     loadProfile();
+
+    document.getElementById('test-email-btn').onclick = async () => {
+      const btn = document.getElementById('test-email-btn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const data = await apiFetch('/test/email', { method: 'POST' });
+        showToast(data.message, 'success');
+      } catch (e) { showToast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = '📧 Send Test Email'; }
+    };
+
+    document.getElementById('test-sms-btn').onclick = async () => {
+      const btn = document.getElementById('test-sms-btn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const data = await apiFetch('/test/sms', { method: 'POST' });
+        showToast(data.message, 'success');
+      } catch (e) { showToast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.textContent = '💬 Send Test SMS'; }
+    };
   </script>
 </body>
 </html>

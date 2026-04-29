@@ -13,9 +13,11 @@ const sendReminderSMS = async (phone, userName, task) => {
 
   try {
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    const dueTime = new Date(task.dueDate).toLocaleString('en-US', {
+    const dueTime = new Date(task.dueDate).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
       month: 'short', day: 'numeric',
       hour: 'numeric', minute: '2-digit',
+      hour12: true,
     });
 
     await client.messages.create({

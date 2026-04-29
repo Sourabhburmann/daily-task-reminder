@@ -1,6 +1,6 @@
 /* ===== Shared app.js — loaded on every page ===== */
 
-const API_BASE = 'https://daily-task-reminder-api.onrender.com/api';
+const API_BASE = 'http://localhost:5002/api';
 
 // ── Theme ──────────────────────────────────────────────────────────────────
 function initTheme() {
