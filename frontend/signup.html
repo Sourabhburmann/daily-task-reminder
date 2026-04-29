@@ -5,43 +5,222 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up — Daily Task Reminder</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background: #F7F8FC;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .left-panel {
+      display: none;
+      flex: 1;
+      background: linear-gradient(145deg, #4F6EF7 0%, #3A56E0 60%, #2D46C8 100%);
+      padding: 3rem;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    @media (min-width: 900px) { .left-panel { display: flex; } }
+    .left-panel::before {
+      content: ''; position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      border-radius: 50%; background: rgba(255,255,255,0.06);
+    }
+    .left-panel::after {
+      content: ''; position: absolute;
+      bottom: -60px; left: -60px;
+      width: 240px; height: 240px;
+      border-radius: 50%; background: rgba(255,255,255,0.04);
+    }
+    .left-brand { position: relative; z-index: 1; }
+    .left-brand-logo {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 1rem;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    .left-brand h1 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.025em; }
+    .left-brand p { color: rgba(255,255,255,0.65); font-size: 0.875rem; margin-top: 0.3rem; }
+
+    .left-steps { position: relative; z-index: 1; }
+    .left-step {
+      display: flex; align-items: flex-start; gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .left-step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800; color: #fff;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .left-step-text h3 { font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .left-step-text p { font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.2rem; line-height: 1.5; }
+
+    .left-bottom { position: relative; z-index: 1; }
+    .left-bottom p { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+    .left-bottom strong { color: rgba(255,255,255,0.8); }
+
+    .right-panel {
+      width: 100%; max-width: 480px;
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+    @media (min-width: 900px) {
+      .right-panel { width: 480px; flex-shrink: 0; margin: 0; padding: 2.5rem 3rem; }
+    }
+
+    .form-wrap { width: 100%; }
+    .form-logo { margin-bottom: 2.25rem; }
+    .form-logo-icon {
+      width: 48px; height: 48px; border-radius: 13px;
+      background: #4F6EF7;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 1.25rem;
+      box-shadow: 0 6px 20px rgba(79,110,247,0.3);
+    }
+    .form-logo h2 { font-size: 1.6rem; font-weight: 800; color: #1A1D2E; letter-spacing: -0.03em; }
+    .form-logo p { color: #6B7280; font-size: 0.875rem; margin-top: 0.3rem; }
+
+    #error-msg {
+      display: none; padding: 0.75rem 1rem; border-radius: 8px;
+      background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5;
+      font-size: 0.82rem; font-weight: 500; margin-bottom: 1.25rem;
+    }
+    #error-msg.show { display: block; }
+
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label {
+      display: block; font-size: 0.78rem; font-weight: 600;
+      color: #6B7280; text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 0.45rem;
+    }
+    .form-input {
+      width: 100%; padding: 0.7rem 1rem;
+      background: #fff; border: 1.5px solid #E8EAF0;
+      border-radius: 8px; color: #1A1D2E;
+      font-size: 0.9rem; outline: none; font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input::placeholder { color: #9CA3AF; }
+    .form-input:focus { border-color: #4F6EF7; box-shadow: 0 0 0 3px rgba(79,110,247,0.15); }
+
+    .btn-signup {
+      width: 100%; padding: 0.75rem;
+      background: #4F6EF7; color: #fff; border: none; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      font-family: inherit;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+      box-shadow: 0 4px 16px rgba(79,110,247,0.3);
+      margin-top: 0.5rem;
+    }
+    .btn-signup:hover { background: #3A56E0; box-shadow: 0 6px 24px rgba(79,110,247,0.4); transform: translateY(-1px); }
+    .btn-signup:active { transform: translateY(0); }
+    .btn-signup:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .form-divider {
+      display: flex; align-items: center; gap: 0.75rem; margin: 1.5rem 0 0;
+    }
+    .form-divider::before, .form-divider::after { content: ''; flex: 1; height: 1px; background: #E8EAF0; }
+    .form-divider span { font-size: 0.75rem; color: #9CA3AF; white-space: nowrap; }
+
+    .form-footer { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: #6B7280; }
+    .form-footer a { color: #4F6EF7; font-weight: 600; text-decoration: none; }
+    .form-footer a:hover { text-decoration: underline; }
+
+    #toast {
+      position: fixed; top: 1.25rem; right: 1.25rem; z-index: 9999;
+      padding: 0.875rem 1.125rem; border-radius: 8px; font-size: 0.85rem;
+      font-weight: 600; display: none; align-items: center; gap: 0.6rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.12); max-width: 340px;
+    }
+    #toast.show { display: flex; }
+    #toast.toast-error   { background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5; }
+    #toast.toast-success { background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; }
+  </style>
 </head>
-<body class="auth-page">
+<body>
   <div id="toast"></div>
 
-  <div class="card auth-card">
-    <div class="auth-logo">
-      <div class="logo-icon">📋</div>
+  <div class="left-panel">
+    <div class="left-brand">
+      <div class="left-brand-logo">📋</div>
       <h1>Daily Task Reminder</h1>
-      <p>Create your account</p>
+      <p>Your personal productivity companion</p>
     </div>
 
-    <div id="error-msg" class="alert alert-error"></div>
+    <div class="left-steps">
+      <div class="left-step">
+        <div class="left-step-num">1</div>
+        <div class="left-step-text">
+          <h3>Create your account</h3>
+          <p>Sign up in seconds with just your name and email</p>
+        </div>
+      </div>
+      <div class="left-step">
+        <div class="left-step-num">2</div>
+        <div class="left-step-text">
+          <h3>Add your tasks</h3>
+          <p>Create tasks with due dates, priorities and descriptions</p>
+        </div>
+      </div>
+      <div class="left-step">
+        <div class="left-step-num">3</div>
+        <div class="left-step-text">
+          <h3>Get reminded</h3>
+          <p>Receive email & SMS alerts 15 minutes before each task is due</p>
+        </div>
+      </div>
+    </div>
 
-    <form id="signup-form">
-      <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" id="name" class="input-field" placeholder="Your name" required />
-      </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" class="input-field" placeholder="you@example.com" required />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" class="input-field" placeholder="Min. 6 characters" required />
-      </div>
-      <button type="submit" id="submit-btn" class="btn-primary" style="width:100%;padding:.65rem;">Create Account</button>
-    </form>
-
-    <p class="auth-footer">
-      Already have an account? <a href="login.html">Sign in</a>
-    </p>
+    <div class="left-bottom">
+      <p>✅ <strong>Free to use.</strong> No credit card required.</p>
+    </div>
   </div>
 
-  <script src="app.js?v=8"></script>
+  <div class="right-panel">
+    <div class="form-wrap">
+      <div class="form-logo">
+        <div class="form-logo-icon">📋</div>
+        <h2>Create your account</h2>
+        <p>Start managing your tasks smarter</p>
+      </div>
+
+      <div id="error-msg"></div>
+
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" class="form-input" placeholder="Your name" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="Min. 6 characters" required autocomplete="new-password" />
+        </div>
+        <button type="submit" id="submit-btn" class="btn-signup">Create Account</button>
+      </form>
+
+      <div class="form-divider"><span>Already have an account?</span></div>
+      <p class="form-footer"><a href="login.html">← Sign in instead</a></p>
+    </div>
+  </div>
+
+  <script src="app.js?v=9"></script>
   <script>
     redirectIfLoggedIn();
 
@@ -60,7 +239,6 @@
         errEl.classList.add('show');
         return;
       }
-
       if (password.length < 6) {
         errEl.textContent = 'Password must be at least 6 characters';
         errEl.classList.add('show');
