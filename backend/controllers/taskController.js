@@ -65,6 +65,10 @@ const createTask = async (req, res) => {
       return res.status(400).json({ message: 'Title and due date are required' });
     }
 
+    if (new Date(dueDate) <= new Date()) {
+      return res.status(400).json({ message: 'Due date must be in the future' });
+    }
+
     const task = await Task.create({
       userId: req.user._id,
       title,

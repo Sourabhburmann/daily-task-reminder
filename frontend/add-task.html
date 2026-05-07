@@ -103,6 +103,15 @@
       try {
         const rawDate = document.getElementById('task-due').value;
         const localDate = new Date(rawDate);
+
+        if (localDate <= new Date()) {
+          errEl.textContent = 'Due date must be in the future';
+          errEl.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Create Task';
+          return;
+        }
+
         await apiFetch('/tasks', {
           method: 'POST',
           body: JSON.stringify({

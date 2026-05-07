@@ -437,6 +437,14 @@
       const id = document.getElementById('task-id').value;
       const rawDate = document.getElementById('task-due').value;
       const localDate = new Date(rawDate);
+
+      if (!id && localDate <= new Date()) {
+        errEl.textContent = 'Due date must be in the future';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        return;
+      }
+
       const body = {
         title: document.getElementById('task-title').value,
         description: document.getElementById('task-desc').value,
